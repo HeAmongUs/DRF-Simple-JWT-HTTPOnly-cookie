@@ -152,3 +152,15 @@ USER_MODEL_VALUES = {
     # count of tries otp code enter
     "OTP_TRY": 3,
 }
+
+# EMAIL
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST = secret.EMAIL_HOST
+EMAIL_PORT = secret.EMAIL_PORT
+EMAIL_HOST_USER = secret.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = secret.EMAIL_HOST_PASSWORD
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER

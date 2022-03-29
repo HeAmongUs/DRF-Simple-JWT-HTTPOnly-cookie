@@ -1,9 +1,9 @@
 from project import settings
 
 EXCLUDE_FROM_MIDDLEWARE = [
-                         #  'apps.accounts.views.RegisterAPIView',
-                         #  'apps.accounts.views.LoginAPIView',
-                           ]
+    #  'apps.accounts.views.RegisterAPIView',
+    'apps.accounts.views.LoginAPIView',
+]
 
 
 class AuthorizationMiddleware:
@@ -19,5 +19,6 @@ class AuthorizationMiddleware:
     def __call__(self, request):
         token = request.COOKIES.get('access_token')
         if token:
-            request.META[settings.SIMPLE_JWT["AUTH_HEADER_NAME"]] = f'{settings.SIMPLE_JWT["AUTH_HEADER_TYPES"][0]} {token}'
+            request.META[
+                settings.SIMPLE_JWT["AUTH_HEADER_NAME"]] = f'{settings.SIMPLE_JWT["AUTH_HEADER_TYPES"][0]} {token}'
         return self.get_response(request)
