@@ -11,24 +11,35 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
-    'apps.accounts.apps.AccountsConfig',
-
-    'rest_framework',
-    'rest_framework_simplejwt',
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
+
+    'apps.accounts.apps.AccountsConfig',
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+    "http://192.168.43.108:8080"
+]
+CORS_ALLOW_CREDENTIALS = True
+
 
 MIDDLEWARE = [
     'apps.accounts.middleware.AuthorizationMiddleware',
 
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -109,7 +120,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
@@ -117,11 +128,10 @@ SIMPLE_JWT = {
 
     'AUTH_ACCESS_COOKIE': 'access_token',  # Cookie name. Enables cookies if value is set.
     'AUTH_REFRESH_COOKIE': 'refresh_token',
-    'AUTH_COOKIE_SECURE': True,    # Whether the auth cookies should be secure (https:// only).
+    'AUTH_COOKIE_SECURE': False,  # Whether the auth cookies should be secure (https:// only).
     'AUTH_COOKIE_HTTP_ONLY': True,  # Http only cookie flag.It's not fetch by javascript.
-    'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
-    'AUTH_COOKIE_SAMESITE': "lax",  # Whether to set the flag restricting cookie leaks on cross-site requests.
-                                    # This can be 'Lax', 'Strict', or None to disable the flag.
+    'AUTH_COOKIE_PATH': '/',  # The path of the auth cookie.
+    'AUTH_COOKIE_SAMESITE': 'Lax',
 
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,

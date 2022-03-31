@@ -1,31 +1,61 @@
 <template>
   <div class="login">
-    <h1 class="title">Sign-in</h1>
+    <h4 class="title">{{ formTitle }}</h4>
     <template v-if="!isConfirmed">
-      <form @submit.prevent="submitHandler" class="form">
-        <input class="input" v-model="username" placeholder="Username" />
-        <input
-          class="input"
-          v-model="password"
-          placeholder="Password"
-          type="password"
-        />
-        <button class="btn" type="submit">Sign-in</button>
+      <form @submit.prevent="loginHandler" class="form">
+        <div class="input-field s6">
+          <input
+            v-model="username"
+            id="username"
+            type="text"
+            class="validate"
+          />
+          <label for="username">Username</label>
+        </div>
+        <div class="input-field s6">
+          <input
+            v-model="password"
+            id="password"
+            type="password"
+            class="validate"
+          />
+          <label for="password">Password</label>
+        </div>
+        <button
+          class="btn waves-effect waves-light cyan lighten-1"
+          type="submit"
+        >
+          Sign-in
+          <i class="material-icons right cyan lighten-1">send</i>
+        </button>
       </form>
     </template>
     <template v-else>
-      <form @submit.prevent="otpVerify" class="form">
-        <input class="input" v-model="otpNumber" placeholder="Enter code" />
-        <button class="btn" type="submit">Send</button>
+      <form @submit.prevent="otpHandler" class="form">
+        <div class="input-field s6">
+          <input
+            v-model="otpNumber"
+            id="otpNumber"
+            type="number"
+            class="validate"
+          />
+          <label for="otpNumber">Code</label>
+        </div>
+        <button
+          class="btn waves-effect waves-light cyan lighten-1"
+          type="submit"
+        >
+          Send
+          <i class="material-icons right">send</i>
+        </button>
       </form>
     </template>
   </div>
 </template>
 
 <script>
-import config from "../app.config";
-import axios from "axios";
-axios.defaults.withCredentials = true;
+import messages from "@/plugins/messages"
+
 export default {
   name: "Login",
   data() {
@@ -34,54 +64,46 @@ export default {
       password: null,
       isConfirmed: false,
       otpNumber: null,
-    };
+    }
+  },
+  computed: {
+    formTitle() {
+      return this.isConfirmed ? "Enter code" : "Sign-in"
+    },
+  },
+  async mounted() {
+    if (this.$store.getters.isAuth) {
+      await this.$router.push({ name: "Home" })
+    }
+    window.M.updateTextFields()
+  },
+  beforeUnmount() {
+    clearInterval(this.interval)
   },
   methods: {
-    submitHandler() {
+    async loginHandler() {
       const user = {
         username: this.username,
         password: this.password,
-      };
-      fetch(config.host + "/api/v1/account/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(user),
-      }).then((response) => {
-        if (response.status === 200) {
-          this.isConfirmed = true;
-          return response.json();
-        } else {
-          throw new Error(`Got back ${response.status}`);
-        }
-      });
+      }
+      const response = await this.$api.auth.signIn(user)
+      if (response.status === 200) {
+        this.isConfirmed = true
+      }
     },
-    cookieShow() {
-      console.log(document.cookie);
-    },
-    otpVerify() {
+    async otpHandler() {
       const user = {
         username: this.username,
         password: this.password,
         otpNumber: this.otpNumber,
-      };
-      const response = axios.post(
-        config.host + "/api/v1/account/login/verify/",
-        user,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      console.log(response);
+      }
+      await this.$api.auth.signIn(user)
+      this.$message(messages["loginSuccess"])
+      await this.$router.push({ name: "Home" })
     },
   },
-};
+}
 </script>
-
 <style scoped lang="scss">
 .title {
   padding: 0;
@@ -98,20 +120,26 @@ export default {
     background: #eee;
   }
 }
-.btn {
-  font-size: 16px;
-  padding: 10px;
-  transition: 0.3s;
-  border: 1px #2c3e50 solid;
-}
 .login {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 30px 40px;
+  border-radius: 10px;
+  background: #fff;
 }
 .form {
   display: flex;
   flex-direction: column;
   max-width: 200px;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
 }
 </style>

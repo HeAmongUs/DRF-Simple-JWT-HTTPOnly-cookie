@@ -10,7 +10,7 @@ def generate_OTP_number():
 
 
 def send_OTP_number(user):
-    email_template = render_to_string('account/login_success.html',
+    email_template = render_to_string('accounts/login_success.html',
                                       {"username": user.username, "otp_number": user.otp_number})
     login = EmailMultiAlternatives(
         "Successfully Login",
@@ -19,7 +19,8 @@ def send_OTP_number(user):
         [user.email],
     )
     login.attach_alternative(email_template, 'text/html')
-    login.send()
+    if not settings.DEBUG:
+        login.send()
 
 
 def two_factor_authentication_send_email(user):
