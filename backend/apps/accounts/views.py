@@ -87,8 +87,6 @@ def set_cookie_token(response, token_value, token_type, cookie_max_age=None):
     if token_type == "access":
         key = settings.SIMPLE_JWT['AUTH_ACCESS_COOKIE']
         max_age = int(cookie_max_age or settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds())
-        print(max_age)
-        print(token_value)
     elif token_type == "refresh":
         key = settings.SIMPLE_JWT['AUTH_REFRESH_COOKIE']
         max_age = int(cookie_max_age or settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
@@ -102,4 +100,3 @@ def set_cookie_token(response, token_value, token_type, cookie_max_age=None):
         httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
         samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
     )
-    print(response.cookies)
