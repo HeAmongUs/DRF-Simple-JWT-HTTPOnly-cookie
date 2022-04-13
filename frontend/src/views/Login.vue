@@ -98,8 +98,8 @@ export default {
         otpNumber: this.otpNumber,
       }
       await this.$api.auth.signIn(user)
-      this.$message(messages["loginSuccess"])
       await this.$router.push({ name: "Home" })
+      this.$message(messages["loginSuccess"])
     },
   },
 }

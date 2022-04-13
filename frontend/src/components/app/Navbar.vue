@@ -34,6 +34,8 @@
 </template>
 
 <script>
+import messages from "../../plugins/messages"
+
 export default {
   name: "Navbar",
   data() {
@@ -74,11 +76,12 @@ export default {
     clearInterval(this.interval)
   },
   methods: {
-    logout() {
+    async logout() {
       try {
-        this.$api.auth.logout()
+        await this.$api.auth.logout()
         this.$store.commit("clearUserInfo")
-        this.$router.push({ name: "Login" })
+        await this.$router.push({ name: "Login" })
+        this.$message(messages["logout"])
       } catch (e) {
         console.log(e)
       }

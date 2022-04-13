@@ -27,13 +27,11 @@ class LoginAPIView(APIView):
                 if bool(otp_number):
                     if user.check_otp(otp_number):
                         user_tokens = user.get_tokens()
-                        set_cookie_token(response, user_tokens["access"], "access")
-                        set_cookie_token(response, user_tokens["refresh"], "refresh")
+                        set_cookie_token(response, user_tokens["access"], "ACCESS")
+                        set_cookie_token(response, user_tokens["refresh"], "REFRESH")
                         csrf.get_token(request)
                         response.data = {
                             "Success": "Login successfully",
-                            "access_token_expire": settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
-                            "refresh_token_expire": settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
                         }
                         return response
                     else:
@@ -52,8 +50,8 @@ class LogoutAPIView(APIView):
     def delete(self, request):
         response = Response()
         try:
-            set_cookie_token(response, "logoutToken", "refresh", timedelta(seconds=-1).total_seconds())
-            set_cookie_token(response, "logoutToken", "access", timedelta(seconds=-1).total_seconds())
+            set_cookie_token(response, "logoutToken", "REFRESH", timedelta(seconds=-1).total_seconds())
+            set_cookie_token(response, "logoutToken", "ACCESS", timedelta(seconds=-1).total_seconds())
             refresh_token = RefreshToken(request.COOKIES.get('refresh_token'))
             refresh_token.blacklist()
             response.status_code = 205
@@ -73,10 +71,10 @@ class CurrentUserView(APIView):
 class CookieTokenRefreshView(TokenRefreshView):
     def finalize_response(self, request, response, *args, **kwargs):
         if response.data.get('refresh'):
-            set_cookie_token(response, response.data["refresh"], "refresh")
+            set_cookie_token(response, response.data["refresh"], "REFRESH")
             del response.data['refresh']
         if response.data.get('access'):
-            set_cookie_token(response, response.data["access"], "access")
+            set_cookie_token(response, response.data["access"], "ACCESS")
             del response.data['access']
         return super().finalize_response(request, response, *args, **kwargs)
 
@@ -84,18 +82,12 @@ class CookieTokenRefreshView(TokenRefreshView):
 
 
 def set_cookie_token(response, token_value, token_type, cookie_max_age=None):
-    if token_type == "access":
-        key = settings.SIMPLE_JWT['AUTH_ACCESS_COOKIE']
-        max_age = int(cookie_max_age or settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds())
-    elif token_type == "refresh":
-        key = settings.SIMPLE_JWT['AUTH_REFRESH_COOKIE']
-        max_age = int(cookie_max_age or settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
-    else:
+    if token_type not in ["ACCESS", "REFRESH"]:
         raise ValueError("Invalid token_type")
     response.set_cookie(
-        key=key,
+        key=settings.SIMPLE_JWT[f'AUTH_{token_type}_COOKIE'],
         value=token_value,
-        max_age=max_age,
+        max_age=int(cookie_max_age or settings.SIMPLE_JWT[f'{token_type}_TOKEN_LIFETIME'].total_seconds()),
         secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
         httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
         samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
