@@ -71,10 +71,7 @@ export default {
       return this.isConfirmed ? "Enter code" : "Sign-in"
     },
   },
-  async mounted() {
-    if (this.$store.getters.isAuth) {
-      await this.$router.push({ name: "Home" })
-    }
+  mounted() {
     window.M.updateTextFields()
   },
   beforeUnmount() {

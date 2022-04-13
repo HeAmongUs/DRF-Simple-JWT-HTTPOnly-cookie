@@ -42,6 +42,8 @@ router.beforeEach(async (to, from, next) => {
 
   if (requireAuth && !currentUser) {
     next({ name: "Login" })
+  } else if (currentUser && to.name === "Login") {
+    next({ name: "Home" })
   } else {
     next()
   }
