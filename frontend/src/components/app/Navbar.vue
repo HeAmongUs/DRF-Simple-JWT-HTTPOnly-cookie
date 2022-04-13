@@ -25,7 +25,7 @@
           </li>
         </template>
         <li v-if="isAuth">
-          <router-link @click="logout" to="/login">Logout</router-link>
+          <a @click.prevent="logout">Logout</a>
         </li>
         <li v-else><router-link to="/login">Sign-in</router-link>></li>
       </ul>
@@ -75,7 +75,13 @@ export default {
   },
   methods: {
     logout() {
-      document.cookie
+      try {
+        this.$api.auth.logout()
+        this.$store.commit("clearUserInfo")
+        this.$router.push({ name: "Login" })
+      } catch (e) {
+        console.log(e)
+      }
     },
   },
 }

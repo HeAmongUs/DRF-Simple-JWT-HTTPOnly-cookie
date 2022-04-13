@@ -3,7 +3,7 @@ export default function (instance) {
     signIn(payload) {
       return instance.post("api/v1/accounts/login/", payload)
     },
-    signOut() {
+    logout() {
       return instance.delete("api/v1/accounts/logout/")
     },
     refreshToken() {

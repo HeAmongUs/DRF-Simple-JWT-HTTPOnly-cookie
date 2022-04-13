@@ -1,8 +1,12 @@
+from datetime import timedelta
+
 from django.contrib.auth import authenticate
 from rest_framework import status, permissions
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.middleware import csrf
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from .serializers import CookieTokenRefreshSerializer, AccountSerializer
@@ -42,8 +46,25 @@ class LoginAPIView(APIView):
             return Response({"Error": "Invalid username or password"}, status=status.HTTP_404_NOT_FOUND)
 
 
+class LogoutAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request):
+        response = Response()
+        try:
+            set_cookie_token(response, "logoutToken", "refresh", timedelta(seconds=-1).total_seconds())
+            set_cookie_token(response, "logoutToken", "access", timedelta(seconds=-1).total_seconds())
+            refresh_token = RefreshToken(request.COOKIES.get('refresh_token'))
+            refresh_token.blacklist()
+            response.status_code = 205
+            return response
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
 class CurrentUserView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
+
     def get(self, request):
         serializer = AccountSerializer(request.user)
         return Response(serializer.data)
@@ -62,13 +83,15 @@ class CookieTokenRefreshView(TokenRefreshView):
     serializer_class = CookieTokenRefreshSerializer
 
 
-def set_cookie_token(response, token_value, token_type="access"):
+def set_cookie_token(response, token_value, token_type, cookie_max_age=None):
     if token_type == "access":
         key = settings.SIMPLE_JWT['AUTH_ACCESS_COOKIE']
-        max_age = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
+        max_age = int(cookie_max_age or settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds())
+        print(max_age)
+        print(token_value)
     elif token_type == "refresh":
         key = settings.SIMPLE_JWT['AUTH_REFRESH_COOKIE']
-        max_age = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()
+        max_age = int(cookie_max_age or settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
     else:
         raise ValueError("Invalid token_type")
     response.set_cookie(
@@ -79,3 +102,4 @@ def set_cookie_token(response, token_value, token_type="access"):
         httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
         samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
     )
+    print(response.cookies)
